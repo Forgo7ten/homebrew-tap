@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tap-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validate tap
+    runs-on: macos-15
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out tap
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Validate tap syntax
+        run: ./scripts/check-tap-syntax.sh

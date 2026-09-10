@@ -1,0 +1,64 @@
+name: Update MicLock Cask
+
+on:
+  workflow_dispatch:
+  repository_dispatch:
+    types:
+      - miclock-release
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-miclock-cask
+  cancel-in-progress: true
+
+jobs:
+  update:
+    runs-on: macos-15
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out tap
+        uses: actions/checkout@v7
+
+      - name: Update MicLock Cask
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.event_name == 'repository_dispatch' && github.event.client_payload.tag || '' }}
+        run: ./scripts/update-miclock-cask.sh
+
+      - name: Validate tap syntax
+        run: ./scripts/check-tap-syntax.sh
+
+      - name: Fetch MicLock release assets through Cask
+        run: ./scripts/check-cask-fetch.sh miclock
+
+      - name: Commit and push changes
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if git diff --quiet -- Casks/miclock.rb; then
+            echo "MicLock Cask is already up to date; nothing to commit."
+            exit 0
+          fi
+
+          version="$(
+            sed -nE \
+              's/^[[:space:]]*version "([^"]+)".*/\1/p' \
+              Casks/miclock.rb
+          )"
+
+          if [[ ! "${version}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "error: Unable to determine MicLock Cask version" >&2
+            exit 1
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add Casks/miclock.rb
+
+          git commit -m "chore(cask): update MicLock to ${version}"
+          git push
