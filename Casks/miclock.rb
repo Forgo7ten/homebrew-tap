@@ -1,9 +1,9 @@
 cask "miclock" do
   arch arm: "arm64", intel: "x86_64"
 
-  version "1.0.0"
-  sha256 arm:   "a8479b98a0f67d278e125afcd1f8278415384e86c61c8b7e255be0c041362944",
-         intel: "2fc558bb03ee41d24be0f3d9473a54a8ec955e82f8b931b22f3235fc3322545d"
+  version "1.1.1"
+  sha256 arm:   "61c6424d16f884dde5b4e0d974a919eac45d23e194c9a19491dcbc2d5d566d2b",
+         intel: "09f7b735f349d4d200d88362b7ebbece600016e9012f5e82ce082dd23c523a51"
 
   url "https://github.com/Forgo7ten/MicLock/releases/download/v#{version}/MicLock-v#{version}-#{arch}.zip"
   name "MicLock"
